@@ -63,7 +63,6 @@ func (g *Game) DealNewHand() {
 	g.Player2.Hand = append(g.Player2.Hand, g.Deck.Draw(4)...)
 
 	g.TrumpCard = deck.GetTrumpCard(g.Player1.OpeningCard, g.Player2.OpeningCard)
-	fmt.Printf("Trump Card: %s\n", g.TrumpCard.CardToString())
 }
 
 func (g *Game) DetermineFirstPlayer() (*Player, *Player) {
@@ -71,16 +70,16 @@ func (g *Game) DetermineFirstPlayer() (*Player, *Player) {
 	rank2, suit2 := g.Player2.OpeningCard.GetCardValue()
 
 	if rank1 > rank2 {
-		fmt.Println("Player 1 starts")
+		fmt.Println("  P1 starts (higher opening card)")
 		return &g.Player1, &g.Player2
 	} else if rank2 > rank1 {
-		fmt.Println("Player 2 starts")
+		fmt.Println("  P2 starts (higher opening card)")
 		return &g.Player2, &g.Player1
 	} else if suit1 > suit2 {
-		fmt.Println("Player 1 starts")
+		fmt.Println("  P1 starts (higher suit)")
 		return &g.Player1, &g.Player2
 	} else {
-		fmt.Println("Player 2 starts")
+		fmt.Println("  P2 starts (higher suit)")
 		return &g.Player2, &g.Player1
 	}
 }
@@ -92,22 +91,23 @@ func (g *Game) PlayRound(p *Player, isAI bool) {
 		playedCard := p.Hand[randomIndex]
 		p.PlayedCards = append(p.PlayedCards, playedCard)
 		p.Hand = append(p.Hand[:randomIndex], p.Hand[randomIndex+1:]...)
-		fmt.Printf("AI plays: %s\n", playedCard.CardToString())
+		fmt.Printf("  AI plays: %s\n", playedCard.CardToString())
 	} else {
+		fmt.Println("  Your hand:")
 		for i, card := range p.Hand {
-			fmt.Printf("%d: %s\n", i+1, card.CardToString())
+			fmt.Printf("    %d: %s\n", i+1, card.CardToString())
 		}
 
 		for {
-			fmt.Print("Type a number: ")
+			fmt.Print("  Play card (enter number): ")
 			_, err := fmt.Scan(&choices)
 			if err != nil {
-				fmt.Println("Invalid Input")
+				fmt.Println("  Invalid input, try again")
 				continue
 			}
 
 			if choices < 1 || choices > len(p.Hand) {
-				fmt.Printf("Number must be between %d to %d\n", 1, len(p.Hand))
+				fmt.Printf("  Please enter 1-%d\n", len(p.Hand))
 				continue
 			}
 
@@ -115,7 +115,7 @@ func (g *Game) PlayRound(p *Player, isAI bool) {
 			playedCard := p.Hand[cardIndex]
 			p.PlayedCards = append(p.PlayedCards, playedCard)
 			p.Hand = append(p.Hand[:cardIndex], p.Hand[cardIndex+1:]...)
-			fmt.Println("Card Choices: ", playedCard)
+			fmt.Printf("  You play: %s\n", playedCard.CardToString())
 
 			break
 		}
@@ -127,37 +127,32 @@ func (g *Game) ResolveRound(p1, p2 *Player) {
 	player2Card := p2.PlayedCards[len(p2.PlayedCards)-1]
 	winningCard := deck.CompareCards(player1Card, player2Card, g.TrumpCard)
 
-	fmt.Printf("Player 1 played: %s\n", player1Card.CardToString())
-	fmt.Printf("Player 2 played: %s\n", player2Card.CardToString())
-	fmt.Printf("Winning card: %s\n", winningCard.CardToString())
+	fmt.Printf("  P1: %s  |  P2: %s\n", player1Card.CardToString(), player2Card.CardToString())
 
 	if winningCard == p1.PlayedCards[len(p1.PlayedCards)-1] {
 		p1.RoundPoint += 1
-		fmt.Println("Player 1 wins this trick!")
+		fmt.Println("  → Player 1 wins!")
 	} else {
 		p2.RoundPoint += 1
-		fmt.Println("Player 2 wins this trick!")
+		fmt.Println("  → Player 2 wins!")
 	}
-	fmt.Println()
 }
 
 func (g *Game) ResolveHand(p1, p2 *Player) {
-	fmt.Println("=== Hand Results ===")
-	fmt.Printf("Player 1 tricks won: %d\n", p1.RoundPoint)
-	fmt.Printf("Player 2 tricks won: %d\n", p2.RoundPoint)
+	fmt.Println("\n=== Hand Results ===")
+	fmt.Printf("  P1 tricks: %d  |  P2 tricks: %d\n", p1.RoundPoint, p2.RoundPoint)
 
 	if p1.RoundPoint > p2.RoundPoint {
 		p1.GamePoint += 4
-		fmt.Println("Player 1 wins the hand! +4 points")
+		fmt.Println("  → Player 1 wins hand! +4 points")
 	} else if p2.RoundPoint > p1.RoundPoint {
 		p2.GamePoint += 4
-		fmt.Println("Player 2 wins the hand! +4 points")
+		fmt.Println("  → Player 2 wins hand! +4 points")
 	} else {
-		fmt.Println("Hand is tied!")
+		fmt.Println("  → Hand is tied!")
 	}
 
-	fmt.Printf("Game score - Player 1: %d, Player 2: %d\n", p1.GamePoint, p2.GamePoint)
-	fmt.Println()
+	fmt.Printf("  Game Score: P1=%d  |  P2=%d\n", p1.GamePoint, p2.GamePoint)
 
 	p1.RoundPoint = 0
 	p2.RoundPoint = 0
