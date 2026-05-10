@@ -12,6 +12,7 @@ type Player struct {
 	GamePoint   int
 	RoundPoint  int
 	PlayedCards []deck.Card
+	OpeningCard deck.Card
 }
 
 type Game struct {
@@ -19,6 +20,10 @@ type Game struct {
 	TrumpCard deck.Card
 	Player1   Player
 	Player2   Player
+}
+
+func NewDeckOnly() deck.Deck {
+	return deck.NewDeck()
 }
 
 func NewGame() *Game {
@@ -31,15 +36,15 @@ func NewGame() *Game {
 	player1 := Player{Hand: p1Hand, GamePoint: 0, RoundPoint: 0}
 	player2 := Player{Hand: p2Hand, GamePoint: 0, RoundPoint: 0}
 
-	player1.Hand = append(player1.Hand, d.DrawOpening())
-	player2.Hand = append(player2.Hand, d.DrawOpening())
+	player1.OpeningCard = d.DrawOpening()
+	player2.OpeningCard = d.DrawOpening()
 
 	player1.Hand = append(player1.Hand, d.Draw(4)...)
 	player2.Hand = append(player2.Hand, d.Draw(4)...)
 
 	return &Game{
 		Deck:      d,
-		TrumpCard: deck.GetTrumpCard(player1.Hand[0], player2.Hand[0]),
+		TrumpCard: deck.GetTrumpCard(player1.OpeningCard, player2.OpeningCard),
 		Player1:   player1,
 		Player2:   player2,
 	}
@@ -51,25 +56,19 @@ func (g *Game) DealNewHand() {
 	g.Player1.Hand = []deck.Card{}
 	g.Player2.Hand = []deck.Card{}
 
-	if len(g.Deck.Cards) < 10 {
-		fmt.Println("Reshuffling deck...")
-		g.Deck = deck.NewDeck()
-		g.Deck.Shuffle()
-	}
-
-	g.Player1.Hand = append(g.Player1.Hand, g.Deck.DrawOpening())
-	g.Player2.Hand = append(g.Player2.Hand, g.Deck.DrawOpening())
+	g.Player1.OpeningCard = g.Deck.DrawOpening()
+	g.Player2.OpeningCard = g.Deck.DrawOpening()
 
 	g.Player1.Hand = append(g.Player1.Hand, g.Deck.Draw(4)...)
 	g.Player2.Hand = append(g.Player2.Hand, g.Deck.Draw(4)...)
 
-	g.TrumpCard = deck.GetTrumpCard(g.Player1.Hand[0], g.Player2.Hand[0])
+	g.TrumpCard = deck.GetTrumpCard(g.Player1.OpeningCard, g.Player2.OpeningCard)
 	fmt.Printf("Trump Card: %s\n", g.TrumpCard.CardToString())
 }
 
 func (g *Game) DetermineFirstPlayer() (*Player, *Player) {
-	rank1, suit1 := g.Player1.Hand[0].GetCardValue()
-	rank2, suit2 := g.Player2.Hand[0].GetCardValue()
+	rank1, suit1 := g.Player1.OpeningCard.GetCardValue()
+	rank2, suit2 := g.Player2.OpeningCard.GetCardValue()
 
 	if rank1 > rank2 {
 		fmt.Println("Player 1 starts")
