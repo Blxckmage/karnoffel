@@ -79,3 +79,31 @@ func GetTrumpCard(card1, card2 Card) Card {
 	}
 	return card1
 }
+
+func (c *Card) CardToString() string {
+	return c.Rank + " of " + c.Suit
+}
+
+func CompareCards(card1, card2, trumpCard Card) Card {
+	rank1, suit1 := card1.GetCardValue()
+	rank2, suit2 := card2.GetCardValue()
+
+	_, trumpSuit := trumpCard.GetCardValue()
+
+	if suit1 == trumpSuit && suit2 != trumpSuit {
+		return card1
+	} else if suit2 == trumpSuit && suit1 != trumpSuit {
+		return card2
+	}
+
+	if rank1 > rank2 {
+		return card1
+	} else if rank2 > rank1 {
+		return card2
+	}
+
+	if suit1 > suit2 {
+		return card1
+	}
+	return card2
+}
